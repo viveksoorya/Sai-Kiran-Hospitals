@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+  * { box-sizing:border-box; margin:0; padding:0; }
+  :root {
+    --primary:#1A73E8; --primary-dark:#0D47A1; --primary-light:#E8F0FE;
+    --accent:#00BFA5; --emergency:#FF6D00; --red:#E53935; --green:#2E7D52;
+    --text:#1A1A2E; --muted:#5F6368; --border:#DADCE0; --surface:#FFFFFF;
+    --bg:#F4F7FA; --yellow-bg:#FFF8E1; --green-bg:#E8F5E9;
+  }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; font-size:14px; }
+  .app { display:flex; flex-direction:column; min-height:100vh; }
+  .header { background:var(--primary-dark); padding:10px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+  .header-brand { display:flex; align-items:center; gap:8px; }
+  .header-logo { width:32px; height:32px; background:var(--accent); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .header-title { color:#fff; font-size:15px; font-weight:600; }
+  .header-sub { color:#90CAF9; font-size:10px; }
+  .header-nav { display:flex; gap:2px; }
+  .tab-btn { padding:7px 14px; border-radius:6px; border:none; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:500; background:transparent; color:rgba(255,255,255,0.6); transition:all 0.15s; white-space:nowrap; }
+  .tab-btn:hover { background:rgba(255,255,255,0.1); color:#fff; }
+  .tab-btn.active { background:rgba(255,255,255,0.15); color:#fff; }
+  .main { flex:1; padding:16px 20px; max-width:1100px; margin:0 auto; width:100%; }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+
+  /* Cards & Sections */
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:14px; }
+  .card-h { padding:12px 16px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+  .card-h h3 { font-size:14px; font-weight:600; }
+  .card-b { padding:14px 16px; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:600; }
+  .badge-green { background:var(--green-bg); color:var(--green); }
+  .badge-red { background:#FFEBEE; color:var(--red); }
+  .badge-orange { background:var(--yellow-bg); color:var(--emergency); }
+  .badge-blue { background:var(--primary-light); color:var(--primary); }
+  .row { display:flex; gap:12px; flex-wrap:wrap; }
+  .col { flex:1; min-width:200px; }
+  .input { width:100%; padding:8px 12px; border:1px solid var(--border); border-radius:6px; font-family:'DM Sans',sans-serif; font-size:13px; outline:none; background:var(--surface); }
+  .input:focus { border-color:var(--primary); }
+  .input-sm { padding:6px 10px; font-size:12px; }
+  .btn { padding:8px 16px; border-radius:6px; border:none; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; cursor:pointer; transition:0.12s; display:inline-flex; align-items:center; gap:5px; }
+  .btn-primary { background:var(--primary); color:#fff; }
+  .btn-primary:hover { background:var(--primary-dark); }
+  .btn-accent { background:var(--accent); color:#fff; }
+  .btn-accent:hover { opacity:0.9; }
+  .btn-emergency { background:var(--emergency); color:#fff; }
+  .btn-emergency:hover { opacity:0.9; }
+  .btn-red { background:var(--red); color:#fff; }
+  .btn-red:hover { opacity:0.9; }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--text); }
+  .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+  .btn-sm { padding:5px 10px; font-size:11px; }
+  .btn-block { width:100%; justify-content:center; }
+  .btn-green { background:var(--green); color:#fff; }
+  .btn-green:hover { opacity:0.9; }
+  .label { font-size:11px; color:var(--muted); margin-bottom:3px; display:block; }
+  .mt-1 { margin-top:6px; }
+  .mt-2 { margin-top:12px; }
+  .mb-1 { margin-bottom:6px; }
+  .mb-2 { margin-bottom:12px; }
+  .text-center { text-align:center; }
+  .text-muted { color:var(--muted); }
+  .text-lg { font-size:20px; font-weight:700; }
+  .text-xl { font-size:28px; font-weight:700; }
+  .text-accent { color:var(--accent); }
+  .text-red { color:var(--red); }
+  .text-primary { color:var(--primary); }
+  .flex { display:flex; }
+  .flex-between { display:flex; align-items:center; justify-content:space-between; }
+  .flex-center { display:flex; align-items:center; justify-content:center; }
+  .gap-1 { gap:6px; }
+  .gap-2 { gap:12px; }
+  .wrap { flex-wrap:wrap; }
+
+  /* Billing specific */
+  .patient-search-wrap { position:relative; }
+  .patient-dropdown { position:absolute; top:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-top:none; border-radius:0 0 8px 8px; max-height:200px; overflow-y:auto; z-index:50; display:none; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+  .patient-dropdown.show { display:block; }
+  .patient-dropdown-item { padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); }
+  .patient-dropdown-item:hover { background:var(--primary-light); }
+  .patient-dropdown-item .name { font-weight:500; font-size:13px; }
+  .patient-dropdown-item .phone { font-size:11px; color:var(--muted); }
+
+  .bill-items { margin:10px 0; }
+  .bill-item { display:flex; align-items:center; gap:8px; padding:8px 12px; background:var(--bg); border-radius:6px; margin-bottom:4px; }
+  .bill-item .name { flex:1; font-size:13px; }
+  .bill-item .qty { font-size:12px; color:var(--muted); }
+  .bill-item .amt { font-weight:600; font-size:13px; min-width:60px; text-align:right; }
+  .bill-item .remove { cursor:pointer; color:var(--red); font-size:16px; padding:2px; }
+  .bill-total { display:flex; justify-content:space-between; align-items:center; padding:10px 12px; background:var(--primary-dark); color:#fff; border-radius:6px; font-size:18px; font-weight:700; margin:8px 0; }
+
+  .preset-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(110px,1fr)); gap:6px; }
+  .preset-btn { padding:8px 6px; border:1px solid var(--border); border-radius:6px; background:var(--surface); cursor:pointer; text-align:center; transition:0.1s; font-family:'DM Sans',sans-serif; font-size:11px; }
+  .preset-btn:hover { border-color:var(--primary); background:var(--primary-light); }
+  .preset-btn .emoji { font-size:18px; display:block; }
+  .preset-btn .name { font-weight:500; font-size:11px; margin-top:2px; }
+  .preset-btn .price { font-size:11px; color:var(--muted); }
+
+  .payment-section { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .pay-btn { padding:8px 16px; border-radius:6px; border:2px solid var(--border); background:var(--surface); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; transition:0.1s; }
+  .pay-btn.active-cash { border-color:var(--green); background:var(--green-bg); color:var(--green); }
+  .pay-btn.active-upi { border-color:var(--primary); background:var(--primary-light); color:var(--primary); }
+
+  .qr-section { text-align:center; padding:16px; }
+  .qr-section img { width:180px; height:180px; border:1px solid var(--border); border-radius:8px; }
+  .qr-section .upi-id { font-size:12px; color:var(--muted); margin-top:6px; }
+
+  /* Patients */
+  .patient-item { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer; transition:0.1s; }
+  .patient-item:hover { background:var(--primary-light); }
+  .patient-item:last-child { border-bottom:none; }
+  .patient-avatar { width:36px; height:36px; border-radius:50%; background:var(--primary-light); display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; color:var(--primary); }
+  .patient-item .info { flex:1; }
+  .patient-item .info .name { font-weight:500; font-size:13px; }
+  .patient-item .info .meta { font-size:11px; color:var(--muted); }
+  .patient-item .last-visit { font-size:11px; color:var(--muted); text-align:right; }
+
+  .visit-card { padding:12px; border:1px solid var(--border); border-radius:8px; margin-bottom:8px; background:var(--bg); }
+  .visit-card .top { display:flex; justify-content:space-between; margin-bottom:6px; }
+  .visit-card .bill-no { font-weight:600; font-size:13px; }
+  .visit-card .date { font-size:11px; color:var(--muted); }
+  .visit-card .items { font-size:12px; color:var(--muted); margin-bottom:4px; }
+  .visit-card .total-row { display:flex; justify-content:space-between; font-weight:600; font-size:14px; }
+  .visit-card .void-badge { font-size:11px; }
+
+  /* Stock */
+  .stock-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:8px; }
+  .stock-card { padding:12px; background:var(--bg); border:1px solid var(--border); border-radius:8px; }
+  .stock-card .s-name { font-weight:500; font-size:13px; }
+  .stock-card .s-te { font-size:11px; color:var(--muted); }
+  .stock-card .s-meta { display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .stock-card .s-stock { font-size:15px; font-weight:700; }
+  .stock-card .s-price { font-size:12px; color:var(--muted); }
+  .stock-card .s-actions { margin-top:6px; display:flex; gap:4px; }
+
+  /* Reports */
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; margin-bottom:14px; }
+  .stat-card { text-align:center; padding:14px 10px; background:var(--surface); border:1px solid var(--border); border-radius:8px; }
+  .stat-card .num { font-size:22px; font-weight:700; color:var(--primary-dark); }
+  .stat-card .lbl { font-size:11px; color:var(--muted); margin-top:2px; }
+  .split-bar-wrap { height:24px; background:var(--bg); border-radius:12px; overflow:hidden; display:flex; margin:8px 0; }
+  .split-bar-cash { background:var(--green); height:100%; transition:width 0.3s; }
+  .split-bar-upi { background:var(--primary); height:100%; transition:width 0.3s; }
+
+  /* Print */
+  .print-wrap { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:200; align-items:center; justify-content:center; }
+  .print-wrap.show { display:flex; }
+  .print-receipt { background:#fff; width:320px; max-height:90vh; overflow-y:auto; padding:20px; font-family:'DM Sans',sans-serif; font-size:11px; border-radius:8px; box-shadow:0 8px 32px rgba(0,0,0,0.15); }
+  .print-receipt .p-hosp { text-align:center; font-weight:700; font-size:14px; margin-bottom:2px; }
+  .print-receipt .p-addr { text-align:center; font-size:10px; color:var(--muted); }
+  .print-receipt .p-divider { border:none; border-top:1px dashed #ccc; margin:8px 0; }
+  .print-receipt .p-row { display:flex; justify-content:space-between; font-size:11px; padding:2px 0; }
+  .print-receipt .p-items { margin:6px 0; }
+  .print-receipt .p-item { display:flex; justify-content:space-between; font-size:10px; padding:1px 0; }
+  .print-receipt .p-total { display:flex; justify-content:space-between; font-weight:700; font-size:13px; padding:4px 0; border-top:1px solid #333; margin-top:4px; }
+  .print-receipt .p-footer { text-align:center; font-size:10px; color:var(--muted); margin-top:10px; }
+  .print-actions { display:flex; gap:8px; margin-top:12px; justify-content:center; }
+
+  /* Toast */
+  .toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:#1A1A2E; color:#fff; padding:10px 20px; border-radius:8px; font-size:13px; z-index:300; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
+  .toast.show { opacity:1; }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:150; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:var(--surface); border-radius:12px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto; padding:20px; }
+  .modal-box h3 { font-size:15px; font-weight:600; margin-bottom:10px; }
+  .modal-item { padding:8px 12px; border:1px solid var(--border); border-radius:6px; margin-bottom:4px; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+  .modal-item:hover { border-color:var(--primary); background:var(--primary-light); }
+  .modal-item .mi-name { font-weight:500; font-size:13px; }
+  .modal-item .mi-price { font-size:12px; color:var(--muted); }
+  .modal-close { float:right; cursor:pointer; font-size:20px; color:var(--muted); }
+
+  .period-btn { padding:5px 12px; border-radius:4px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:12px; }
+  .period-btn.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+  @media (max-width:768px) {
+    .main { padding:12px 10px; }
+    .header-title { font-size:13px; }
+    .tab-btn { padding:5px 8px; font-size:10px; }
+    .preset-grid { grid-template-columns:repeat(3,1fr); }
+    .stat-grid { grid-template-columns:repeat(2,1fr); }
+    .stock-grid { grid-template-columns:repeat(2,1fr); }
+    .row { flex-direction:column; }
+    .col { min-width:100%; }
+  }
+  @media print {
+    body * { visibility:hidden; }
+    .print-wrap, .print-wrap * { visibility:visible; }
+    .print-wrap { position:absolute; left:0; top:0; width:100%; height:auto; background:transparent; display:flex !important; }
+    .print-receipt { box-shadow:none; max-width:320px; margin:0 auto; }
+    .print-actions { display:none !important; }
+    .no-print { display:none !important; }
+  }
+  @media (max-width:480px) {
+    .preset-grid { grid-template-columns:repeat(2,1fr); }
+    .stock-grid { grid-template-columns:1fr; }
+    .header { padding:8px 10px; }
+    .header-nav { gap:1px; }
+    .tab-btn { padding:4px 6px; font-size:9px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="header-brand">
+      <div class="header-logo">🏥</div>
+      <div>
+        <div class="header-title">Sai Kiran Hospital</div>
+        <div class="header-sub">Billing & Management</div>
+      </div>
+    </div>
+    <div class="header-nav">
+      <button class="tab-btn active" onclick="switchTab('billing')">🧾 New Bill</button>
+      <button class="tab-btn" onclick="switchTab('patients')">👥 Patients</button>
+      <button class="tab-btn" onclick="switchTab('stock')">💊 Stock</button>
+      <button class="tab-btn" onclick="switchTab('reports')">📊 Reports</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Billing Tab -->
+    <div id="tab-billing" class="tab-content active">
+      <div class="row">
+        <div class="col" style="flex:3">
+          <div class="card">
+            <div class="card-h"><h3>🧾 New Bill</h3></div>
+            <div class="card-b">
+              <div class="patient-search-wrap">
+                <label class="label">Search Patient by Phone</label>
+                <input class="input" id="phone-search" placeholder="Type phone number..." oninput="onPhoneSearch(this.value)" autocomplete="off" />
+                <div class="patient-dropdown" id="patient-dropdown"></div>
+              </div>
+              <div id="selected-patient" class="mt-1"></div>
+              <div id="walkin-section" class="mt-1" style="display:none">
+                <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:6px">➕ New Patient</div>
+                <div class="row">
+                  <div class="col"><input class="input input-sm" id="walkin-name" placeholder="Patient name (Telugu/English)" /></div>
+                  <div class="col"><input class="input input-sm" id="walkin-phone" placeholder="Phone (optional)" /></div>
+                  <div class="col" style="flex:0"><input class="input input-sm" id="walkin-age" placeholder="Age" style="max-width:80px" /></div>
+                  <div class="col" style="flex:0">
+                    <select class="input input-sm" id="walkin-gender" style="max-width:90px">
+                      <option value="">Gender</option><option value="M">Male</option><option value="F">Female</option>
+                    </select>
+                  </div>
+                  <div class="col" style="flex:0">
+                    <button class="btn btn-primary btn-sm" onclick="createWalkinPatient()">➕ Add</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h">
+              <h3>Quick Add</h3>
+              <span class="badge badge-blue" id="item-count">0 items</span>
+            </div>
+            <div class="card-b">
+              <div class="preset-grid" id="preset-grid"></div>
+              <div class="row mt-2">
+                <button class="btn btn-outline btn-sm" onclick="openModal('medicine')">💊 Add Medicine</button>
+                <button class="btn btn-outline btn-sm" onclick="openModal('lab')">🔬 Add Lab Test</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-h"><h3>Bill Items</h3></div>
+            <div class="card-b">
+              <div id="bill-items-list"><div class="text-muted text-center" style="padding:20px">No items added yet</div></div>
+              <div class="bill-total">
+                <span>Total</span>
+                <span id="bill-total-amt">₹0</span>
+              </div>
+
+              <div class="payment-section mt-2">
+                <label class="label" style="width:100%">Payment Mode</label>
+                <button class="pay-btn active-cash" id="pay-cash" onclick="setPayment('cash')">💵 Cash</button>
+                <button class="pay-btn" id="pay-upi" onclick="setPayment('upi')">📱 UPI</button>
+                <input class="input input-sm" id="payment-ref" placeholder="UPI ref / Notes" style="max-width:200px;display:none" />
+              </div>
+
+              <div class="qr-section" id="qr-section" style="display:none">
+                <img id="qr-img" alt="UPI QR" />
+                <div class="upi-id">Scan to pay</div>
+                <input class="input input-sm mt-1" id="upi-ref" placeholder="Enter UPI reference number" maxlength="20" />
+              </div>
+
+              <div class="row mt-2">
+                <button class="btn btn-primary btn-block" onclick="generateBill()" id="btn-generate">🧾 Generate Bill</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col" style="flex:1">
+          <div class="card">
+            <div class="card-h"><h3>📋 Quick Info</h3></div>
+            <div class="card-b">
+              <div id="quick-stats">
+                <div class="text-muted" style="font-size:12px">Today's Patients: <strong id="today-count" style="color:var(--primary)">0</strong></div>
+                <div class="text-muted mt-1" style="font-size:12px">Today's Revenue: <strong id="today-rev" style="color:var(--accent)">₹0</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Patients Tab -->
+    <div id="tab-patients" class="tab-content">
+      <div class="card">
+        <div class="card-h"><h3>👥 All Patients</h3><span id="patient-count" class="badge badge-blue">0</span></div>
+        <div class="card-b">
+          <input class="input" id="patient-search" placeholder="Search by name or phone..." oninput="renderPatientList(this.value)" />
+          <div id="patient-list" class="mt-1"></div>
+        </div>
+      </div>
+      <div id="patient-detail" style="display:none"></div>
+    </div>
+
+    <!-- Stock Tab -->
+    <div id="tab-stock" class="tab-content">
+      <div class="card">
+        <div class="card-h"><h3>💊 Medicine Stock</h3>
+          <div style="display:flex;gap:6px">
+            <input class="input input-sm" id="stock-search" placeholder="Search..." oninput="renderStockList(this.value)" style="max-width:200px" />
+            <button class="btn btn-accent btn-sm" onclick="addStockModal()">📥 Add Stock</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div class="stock-grid" id="stock-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div id="tab-reports" class="tab-content">
+      <div class="card">
+        <div class="card-h">
+          <h3>📊 Reports</h3>
+          <div style="display:flex;gap:4px">
+            <button class="period-btn active" onclick="setPeriod('today')">Today</button>
+            <button class="period-btn" onclick="setPeriod('week')">Week</button>
+            <button class="period-btn" onclick="setPeriod('month')">Month</button>
+          </div>
+        </div>
+        <div class="card-b">
+          <div id="report-content"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Print Overlay -->
+<div class="print-wrap" id="print-overlay">
+  <div class="print-receipt" id="print-receipt"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal-box">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+    <h3 id="modal-title">Select Item</h3>
+    <input class="input input-sm mb-1" id="modal-search" placeholder="Search..." oninput="renderModalList()" />
+    <div id="modal-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const PRESET_ITEMS = [
+  { id:'consult', name:'Consultation Fee', nameTe:'సంప్రదింపు రుసుము', emoji:'🩺', price:200 },
+  { id:'followup', name:'Follow-up Visit', nameTe:'ఫాలో-అప్ విజిట్', emoji:'🔄', price:100 },
+  { id:'dressing', name:'Dressing', nameTe:'డ్రెస్సింగ్', emoji:'🩹', price:100 },
+  { id:'injection', name:'Injection', nameTe:'ఇంజెక్షన్', emoji:'💉', price:50 },
+  { id:'nebulization', name:'Nebulization', nameTe:'నెబ్యులైజేషన్', emoji:'💨', price:80 },
+  { id:'ecg', name:'ECG', nameTe:'ఈసీజీ', emoji:'❤️', price:150 },
+  { id:'bp-check', name:'BP Check', nameTe:'బీపీ చెక్', emoji:'🩸', price:50 },
+  { id:'stitch-removal', name:'Stitch Removal', nameTe:'కుట్లు తీయడం', emoji:'✂️', price:100 },
+  { id:'oxygen', name:'Oxygen', nameTe:'ఆక్సిజన్', emoji:'💨', price:200 },
+  { id:'vaccination', name:'Vaccination', nameTe:'టీకా', emoji:'💉', price:150 },
+];
+
+const DEFAULT_MEDICINES = [
+  { id:'m1', name:'Paracetamol 500mg', nameTe:'పారాసెటమోల్ 500మి.గ్రా', stock:100, unit:'strip', price:30 },
+  { id:'m2', name:'Amoxicillin 250mg', nameTe:'అమోక్సిసిలిన్ 250మి.గ్రా', stock:50, unit:'strip', price:80 },
+  { id:'m3', name:'Cetirizine 10mg', nameTe:'సెటిరిజిన్ 10మి.గ్రా', stock:60, unit:'strip', price:25 },
+  { id:'m4', name:'Pantoprazole 40mg', nameTe:'పాంటోప్రజోల్ 40మి.గ్రా', stock:40, unit:'strip', price:45 },
+  { id:'m5', name:'Azithromycin 500mg', nameTe:'అజిత్రోమైసిన్ 500మి.గ్రా', stock:30, unit:'strip', price:120 },
+  { id:'m6', name:'Ibuprofen 400mg', nameTe:'ఇబుప్రోఫెన్ 400మి.గ్రా', stock:45, unit:'strip', price:35 },
+  { id:'m7', name:'Metformin 500mg', nameTe:'మెట్ఫార్మిన్ 500మి.గ్రా', stock:35, unit:'strip', price:40 },
+  { id:'m8', name:'Amlodipine 5mg', nameTe:'అమ్లోడిపైన్ 5మి.గ్రా', stock:25, unit:'strip', price:30 },
+  { id:'m9', name:'Dolo 650mg', nameTe:'డోలో 650మి.గ్రా', stock:80, unit:'strip', price:35 },
+  { id:'m10', name:'Augmentin 625mg', nameTe:'ఆగ్మెంటిన్ 625మి.గ్రా', stock:20, unit:'strip', price:180 },
+  { id:'m11', name:'Montair LC', nameTe:'మోంటైర్ LC', stock:30, unit:'strip', price:120 },
+  { id:'m12', name:'Allegra 180mg', nameTe:'అల్లెగ్రా 180మి.గ్రా', stock:25, unit:'strip', price:130 },
+  { id:'m13', name:'Thyronorm 50mcg', nameTe:'థైరోనార్మ్ 50మై.గ్రా', stock:20, unit:'strip', price:60 },
+  { id:'m14', name:'Ecosprin 75mg', nameTe:'ఎకోస్ప్రిన్ 75మి.గ్రా', stock:30, unit:'strip', price:25 },
+  { id:'m15', name:'Shelcal 500mg', nameTe:'షెల్క్యాల్ 500మి.గ్రా', stock:40, unit:'strip', price:90 },
+  { id:'m16', name:'B-Complex', nameTe:'బీ-కాంప్లెక్స్', stock:35, unit:'strip', price:55 },
+  { id:'m17', name:'Multivitamin', nameTe:'మల్టీవిటమిన్', stock:45, unit:'bottle', price:150 },
+  { id:'m18', name:'ORS Powder', nameTe:'ORS పౌడర్', stock:60, unit:'pack', price:15 },
+];
+
+const LAB_TESTS = [
+  { id:'l1', name:'Complete Blood Count (CBC)', nameTe:'కంప్లీట్ బ్లడ్ కౌంట్', price:250 },
+  { id:'l2', name:'Blood Sugar (Fasting)', nameTe:'బ్లడ్ షుగర్ (ఫాస్టింగ్)', price:80 },
+  { id:'l3', name:'Blood Sugar (PP)', nameTe:'బ్లడ్ షుగర్ (పీపీ)', price:80 },
+  { id:'l4', name:'HbA1c', nameTe:'HbA1c', price:300 },
+  { id:'l5', name:'Lipid Profile', nameTe:'లిపిడ్ ప్రొఫైల్', price:350 },
+  { id:'l6', name:'Renal Function Test (RFT)', nameTe:'రీనల్ ఫంక్షన్ టెస్ట్', price:300 },
+  { id:'l7', name:'Liver Function Test (LFT)', nameTe:'లివర్ ఫంక్షన్ టెస్ట్', price:350 },
+  { id:'l8', name:'Urine Routine', nameTe:'యూరిన్ రూటీన్', price:100 },
+  { id:'l9', name:'Thyroid Profile', nameTe:'థైరాయిడ్ ప్రొఫైల్', price:400 },
+  { id:'l10', name:'Vitamin B12', nameTe:'విటమిన్ B12', price:500 },
+  { id:'l11', name:'Vitamin D', nameTe:'విటమిన్ డి', price:500 },
+  { id:'l12', name:'Malaria Test', nameTe:'మలేరియా టెస్ట్', price:200 },
+  { id:'l13', name:'Dengue Test', nameTe:'డెంగ్యూ టెస్ట్', price:300 },
+  { id:'l14', name:'CRP', nameTe:'CRP', price:200 },
+  { id:'l15', name:'ESR', nameTe:'ESR', price:100 },
+  { id:'l16', name:'Widal Test', nameTe:'విడాల్ టెస్ట్', price:150 },
+  { id:'l17', name:'X-Ray', nameTe:'ఎక్స్-రే', price:300 },
+  { id:'l18', name:'Ultrasound', nameTe:'అల్ట్రాసౌండ్', price:600 },
+];
+
+const SETTINGS = {
+  hospital: 'Sai Kiran Multi-Speciality Hospital',
+  hospitalTe: 'సాయి కిరణ్ మల్టీ-స్పెషాలిటీ హాస్పిటల్',
+  address: 'Karmanghat, Hyderabad',
+  phone: '+91 94490 XXXXX',
+  upiId: 'placeholder@upi',
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let patients = [];
+let visits = [];
+let medicines = [];
+let billCounter = { date: '', seq: 0 };
+let currentTab = 'billing';
+let currentPatient = null;
+let currentBill = [];
+let paymentMode = 'cash';
+let currentPeriod = 'today';
+let modalType = '';
+
+// ============================================================
+// PERSISTENCE
+// ============================================================
+function save() {
+  try {
+    localStorage.setItem('skh_patients', JSON.stringify(patients));
+    localStorage.setItem('skh_visits', JSON.stringify(visits));
+    localStorage.setItem('skh_medicines', JSON.stringify(medicines));
+    localStorage.setItem('skh_counter', JSON.stringify(billCounter));
+  } catch(e) {}
+}
+
+function load() {
+  try {
+    const p = localStorage.getItem('skh_patients');
+    const v = localStorage.getItem('skh_visits');
+    const m = localStorage.getItem('skh_medicines');
+    const c = localStorage.getItem('skh_counter');
+    if (p) patients = JSON.parse(p);
+    if (v) visits = JSON.parse(v);
+    if (m) medicines = JSON.parse(m);
+    if (c) billCounter = JSON.parse(c);
+  } catch(e) {}
+  if (medicines.length === 0) medicines = JSON.parse(JSON.stringify(DEFAULT_MEDICINES));
+  updateQuickStats();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============================================================
+// TAB SWITCHING
+// ============================================================
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  const tabLabels = { billing:'New Bill', patients:'Patients', stock:'Stock', reports:'Reports' };
+  document.querySelectorAll('.tab-btn').forEach(el => {
+    if (el.textContent.includes(tabLabels[tab])) el.classList.add('active');
+  });
+  if (tab === 'patients') renderPatientList();
+  if (tab === 'stock') renderStockList();
+  if (tab === 'reports') renderReport(currentPeriod);
+}
+
+// ============================================================
+// BILLING
+// ============================================================
+function onPhoneSearch(val) {
+  const dd = document.getElementById('patient-dropdown');
+  const ws = document.getElementById('walkin-section');
+  if (!val || val.length < 2) {
+    dd.classList.remove('show');
+    if (!val && !currentPatient) ws.style.display = 'block';
+    else ws.style.display = 'none';
+    return;
+  }
+  const matches = patients.filter(p => p.phone.includes(val) || p.name.toLowerCase().includes(val.toLowerCase()));
+  if (matches.length === 0) {
+    dd.classList.remove('show');
+    ws.style.display = 'block';
+    document.getElementById('walkin-phone').value = val;
+    return;
+  }
+  ws.style.display = 'none';
+  dd.innerHTML = matches.map(p => `<div class="patient-dropdown-item" onclick="selectPatient('${p.id}')">
+    <div class="name">${p.name} ${p.nameTe ? '· ' + p.nameTe : ''}</div>
+    <div class="phone">📱 ${p.phone} · ${p.age}y ${p.gender === 'M' ? '👤' : '👩'}</div>
+  </div>`).join('');
+  dd.classList.add('show');
+}
+
+function selectPatient(id) {
+  currentPatient = patients.find(p => p.id === id);
+  document.getElementById('patient-dropdown').classList.remove('show');
+  document.getElementById('phone-search').value = currentPatient.phone;
+  document.getElementById('walkin-section').style.display = 'none';
+  const el = document.getElementById('selected-patient');
+  el.innerHTML = `<div class="flex-between" style="background:var(--primary-light);padding:8px 12px;border-radius:6px;margin-top:6px">
+    <div><strong>${currentPatient.name}</strong> ${currentPatient.nameTe ? '· ' + currentPatient.nameTe : ''}<br>
+    <span class="text-muted" style="font-size:11px">📱 ${currentPatient.phone} · ${currentPatient.age}y · ${currentPatient.gender === 'M' ? 'Male' : 'Female'}</span></div>
+    <button class="btn btn-outline btn-sm" onclick="clearPatient()">✕ Change</button>
+  </div>`;
+}
+
+function clearPatient() {
+  currentPatient = null;
+  document.getElementById('selected-patient').innerHTML = '';
+  document.getElementById('phone-search').value = '';
+  document.getElementById('walkin-section').style.display = 'none';
+}
+
+function createWalkinPatient() {
+  const name = document.getElementById('walkin-name').value.trim();
+  if (!name) { showToast('Please enter patient name'); return; }
+  let phone = document.getElementById('walkin-phone').value.trim();
+  if (!phone) phone = 'WALKIN';
+  const age = parseInt(document.getElementById('walkin-age').value) || 0;
+  const gender = document.getElementById('walkin-gender').value || '';
+  const id = 'p_' + Date.now();
+  const np = { id, name, nameTe: '', phone, age, gender, address: '', created: getDateStr() };
+  patients.push(np);
+  save();
+  currentPatient = np;
+  document.getElementById('walkin-name').value = '';
+  document.getElementById('walkin-phone').value = '';
+  document.getElementById('walkin-age').value = '';
+  document.getElementById('walkin-gender').value = '';
+  document.getElementById('walkin-section').style.display = 'none';
+  document.getElementById('phone-search').value = phone === 'WALKIN' ? '' : phone;
+  const el = document.getElementById('selected-patient');
+  el.innerHTML = `<div class="flex-between" style="background:var(--primary-light);padding:8px 12px;border-radius:6px;margin-top:6px">
+    <div><strong>${np.name}</strong>${phone === 'WALKIN' ? ' (Walk-in)' : ''}<br>
+    <span class="text-muted" style="font-size:11px">${phone !== 'WALKIN' ? '📱 ' + phone + ' · ' : ''}${np.age > 0 ? np.age + 'y · ' : ''}${np.gender === 'M' ? 'Male' : np.gender === 'F' ? 'Female' : ''}</span></div>
+    <button class="btn btn-outline btn-sm" onclick="clearPatient()">✕ Change</button>
+  </div>`;
+  showToast('Patient added');
+}
+
+function addPresetToBill(pid) {
+  const item = PRESET_ITEMS.find(p => p.id === pid);
+  if (!item) return;
+  const existing = currentBill.find(b => b.type === 'preset' && b.itemId === pid);
+  if (existing) {
+    existing.qty += 1;
+  } else {
+    currentBill.push({ type:'preset', itemId:pid, name:item.name, price:item.price, qty:1 });
+  }
+  renderBill();
+}
+
+function addMedicineToBill(mid) {
+  const med = medicines.find(m => m.id === mid);
+  if (!med) return;
+  if (med.stock <= 0) { showToast('Out of stock!'); return; }
+  const existing = currentBill.find(b => b.type === 'medicine' && b.itemId === mid);
+  if (existing) {
+    if (existing.qty >= med.stock) { showToast('Not enough stock'); return; }
+    existing.qty += 1;
+  } else {
+    currentBill.push({ type:'medicine', itemId:mid, name:med.name, price:med.price, qty:1 });
+  }
+  renderBill();
+}
+
+function addLabToBill(lid) {
+  const lab = LAB_TESTS.find(l => l.id === lid);
+  if (!lab) return;
+  currentBill.push({ type:'lab', itemId:lid, name:lab.name, price:lab.price, qty:1 });
+  renderBill();
+}
+
+function removeBillItem(idx) {
+  currentBill.splice(idx, 1);
+  renderBill();
+}
+
+function renderBill() {
+  const list = document.getElementById('bill-items-list');
+  const total = currentBill.reduce((s, i) => s + i.price * i.qty, 0);
+  document.getElementById('bill-total-amt').textContent = '₹' + total;
+  document.getElementById('item-count').textContent = currentBill.length + ' items';
+  if (currentBill.length === 0) {
+    list.innerHTML = '<div class="text-muted text-center" style="padding:20px">No items added yet</div>';
+    return;
+  }
+  list.innerHTML = currentBill.map((item, idx) => `<div class="bill-item">
+    <span class="name">${item.name}</span>
+    <span class="qty">${item.type === 'preset' ? '' : '×'+item.qty}</span>
+    <span class="amt">₹${item.price * item.qty}</span>
+    <span class="remove" onclick="removeBillItem(${idx})">✕</span>
+  </div>`).join('');
+  updateQR(total);
+}
+
+function updateQR(total) {
+  const qr = document.getElementById('qr-section');
+  if (paymentMode === 'upi' && total > 0) {
+    qr.style.display = 'block';
+    const upiLink = `upi://pay?pa=${SETTINGS.upiId}&pn=Sai+Kiran+Hospital&am=${total}&cu=INR`;
+    document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiLink)}`;
+    document.getElementById('qr-img').alt = 'UPI QR for ₹' + total;
+  } else {
+    qr.style.display = 'none';
+  }
+}
+
+function setPayment(mode) {
+  paymentMode = mode;
+  document.getElementById('pay-cash').className = 'pay-btn' + (mode === 'cash' ? ' active-cash' : '');
+  document.getElementById('pay-upi').className = 'pay-btn' + (mode === 'upi' ? ' active-upi' : '');
+  document.getElementById('payment-ref').style.display = mode === 'upi' ? 'inline-block' : 'none';
+  updateQR(currentBill.reduce((s, i) => s + i.price * i.qty, 0));
+}
+
+function getBillNo() {
+  const today = getDateStr();
+  if (billCounter.date !== today) { billCounter.date = today; billCounter.seq = 0; }
+  billCounter.seq += 1;
+  save();
+  return today.replace(/-/g, '') + '-' + String(billCounter.seq).padStart(3, '0');
+}
+
+function generateBill() {
+  if (currentBill.length === 0) { showToast('Add items to the bill first'); return; }
+  if (!currentPatient) { showToast('Select or add a patient first'); return; }
+  const total = currentBill.reduce((s, i) => s + i.price * i.qty, 0);
+  if (total <= 0) { showToast('Bill total is zero'); return; }
+
+  const ref = paymentMode === 'upi' ? document.getElementById('upi-ref').value.trim() : '';
+  const billNo = getBillNo();
+  const visit = {
+    id: 'v_' + Date.now(),
+    patientId: currentPatient.id,
+    date: getDateStr(),
+    time: new Date().toLocaleTimeString(),
+    items: JSON.parse(JSON.stringify(currentBill)),
+    total,
+    paymentMode,
+    paymentRef: ref,
+    billNo,
+    voided: false,
+  };
+  visits.push(visit);
+
+  // Decrement medicine stock
+  currentBill.forEach(item => {
+    if (item.type === 'medicine') {
+      const med = medicines.find(m => m.id === item.itemId);
+      if (med) med.stock = Math.max(0, med.stock - item.qty);
+    }
+  });
+
+  save();
+  showToast('Bill #' + billNo + ' generated');
+
+  // Reset billing screen
+  const itemsCopy = [...currentBill];
+  currentBill = [];
+  renderBill();
+  clearPatient();
+  updateQuickStats();
+
+  // Show print
+  showPrint(visit);
+}
+
+// ============================================================
+// PRINT
+// ============================================================
+function showPrint(visit) {
+  const patient = patients.find(p => p.id === visit.patientId);
+  const overlay = document.getElementById('print-overlay');
+  overlay.classList.add('show');
+  const itemsHtml = visit.items.map(i => `<div class="p-item"><span>${i.name} ${i.type !== 'preset' ? '×'+i.qty : ''}</span><span>₹${i.price * i.qty}</span></div>`).join('');
+  document.getElementById('print-receipt').innerHTML = `
+    <div class="p-hosp">🏥 ${SETTINGS.hospital}</div>
+    <div class="p-addr">${SETTINGS.address} · 📞 ${SETTINGS.phone}</div>
+    <hr class="p-divider">
+    <div class="p-row"><span>Bill #: ${visit.billNo}</span><span>${visit.date}</span></div>
+    <div class="p-row"><span>Patient: ${patient ? patient.name : 'Unknown'}${patient && patient.phone !== 'WALKIN' ? ' ('+patient.phone+')' : ''}</span></div>
+    <hr class="p-divider">
+    <div class="p-items">${itemsHtml}</div>
+    <hr class="p-divider">
+    <div class="p-total"><span>Total</span><span>₹${visit.total}</span></div>
+    <div class="p-row"><span>Payment: ${visit.paymentMode === 'cash' ? '💵 Cash' : '📱 UPI'}${visit.paymentRef ? ' ('+visit.paymentRef+')' : ''}</span></div>
+    <hr class="p-divider">
+    <div class="p-footer">Thank you! · ధన్యవాదాలు!<br>${SETTINGS.hospitalTe}</div>
+    <div class="print-actions">
+      <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Print</button>
+      <button class="btn btn-accent btn-sm" onclick="whatsAppVisit('${visit.id}')">📲 WhatsApp</button>
+      <button class="btn btn-outline btn-sm" onclick="closePrint()">✕ Close</button>
+    </div>
+  `;
+}
+
+function closePrint() {
+  document.getElementById('print-overlay').classList.remove('show');
+}
+
+function whatsAppVisit(vid) {
+  const visit = visits.find(v => v.id === vid);
+  if (!visit) return;
+  const patient = patients.find(p => p.id === visit.patientId);
+  const items = visit.items.map(i => `${i.name}${i.type !== 'preset' ? ' ×'+i.qty : ''} = ₹${i.price*i.qty}`).join('\n');
+  const msg = `🏥 *${SETTINGS.hospital}*\n📄 Bill #${visit.billNo}\n📅 ${visit.date}\n👤 ${patient ? patient.name : ''}\n\n${items}\n\n*Total: ₹${visit.total}*\n💳 ${visit.paymentMode === 'cash' ? 'Cash' : 'UPI'}\n\nThank you!`;
+  window.open(`https://wa.me/${SETTINGS.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+  closePrint();
+}
+
+// ============================================================
+// PATIENTS
+// ============================================================
+function renderPatientList(filter = '') {
+  const list = document.getElementById('patient-list');
+  document.getElementById('patient-count').textContent = patients.length;
+  let items = patients;
+  if (filter) items = items.filter(p =>
+    p.name.toLowerCase().includes(filter.toLowerCase()) ||
+    p.phone.includes(filter)
+  );
+  if (items.length === 0) {
+    list.innerHTML = '<div class="text-muted text-center" style="padding:20px">No patients found</div>';
+    return;
+  }
+  list.innerHTML = items.map(p => {
+    const lastVisit = visits.filter(v => v.patientId === p.id).sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time))[0];
+    const visitCount = visits.filter(v => v.patientId === p.id && !v.voided).length;
+    return `<div class="patient-item" onclick="showPatientDetail('${p.id}')">
+      <div class="patient-avatar">${p.gender === 'F' ? '👩' : '👤'}</div>
+      <div class="info">
+        <div class="name">${p.name}${p.nameTe ? ' · ' + p.nameTe : ''}</div>
+        <div class="meta">📱 ${p.phone} · ${p.age}y · ${visitCount} visit${visitCount !== 1 ? 's' : ''}</div>
+      </div>
+      <div class="last-visit">${lastVisit ? lastVisit.date : ''}</div>
+    </div>`;
+  }).join('');
+}
+
+function showPatientDetail(id) {
+  const patient = patients.find(p => p.id === id);
+  if (!patient) return;
+  const patientVisits = visits.filter(v => v.patientId === id).sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time));
+  const totalSpent = patientVisits.filter(v => !v.voided).reduce((s, v) => s + v.total, 0);
+  const el = document.getElementById('patient-detail');
+  el.style.display = 'block';
+  el.innerHTML = `<div class="card">
+    <div class="card-h"><h3>${patient.name}</h3>
+      <button class="btn btn-primary btn-sm" onclick="switchTab('billing');selectPatient('${patient.id}')">🧾 New Bill</button>
+    </div>
+    <div class="card-b">
+      <div class="row">
+        <div class="col"><span class="text-muted">Phone:</span> ${patient.phone}</div>
+        <div class="col"><span class="text-muted">Age/Gender:</span> ${patient.age}y / ${patient.gender === 'M' ? 'Male' : patient.gender === 'F' ? 'Female' : '-'}</div>
+      </div>
+      <div class="row mt-1">
+        <div class="col"><span class="text-muted">Total Visits:</span> ${patientVisits.length}</div>
+        <div class="col"><span class="text-muted">Total Spent:</span> <strong>₹${totalSpent}</strong></div>
+      </div>
+      <hr style="border:none;border-top:1px solid var(--border);margin:12px 0">
+      <h4 style="font-size:13px;margin-bottom:8px">Visit History</h4>
+      ${patientVisits.length === 0 ? '<div class="text-muted">No visits yet</div>' :
+        patientVisits.map(v => `<div class="visit-card">
+          <div class="top">
+            <span class="bill-no">#${v.billNo} ${v.voided ? '<span class="badge badge-red">Void</span>' : ''}</span>
+            <span class="date">${v.date} ${v.time}</span>
+          </div>
+          <div class="items">${v.items.map(i => i.name + (i.type !== 'preset' ? ' ×'+i.qty : '')).join(', ')}</div>
+          <div class="total-row">
+            <span>${v.paymentMode === 'cash' ? '💵 Cash' : '📱 UPI'}${v.paymentRef ? ' ('+v.paymentRef+')' : ''}</span>
+            <span>₹${v.total}</span>
+          </div>
+          ${v.voided ? '' : `<div class="mt-1"><button class="btn btn-red btn-sm" onclick="voidVisit('${v.id}')">🚫 Void Bill</button>
+          <button class="btn btn-accent btn-sm" onclick="whatsAppVisit('${v.id}')">📲 WhatsApp</button></div>`}
+        </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function voidVisit(vid) {
+  if (!confirm('Void this bill? It will be excluded from revenue reports.')) return;
+  const visit = visits.find(v => v.id === vid);
+  if (visit) {
+    visit.voided = true;
+    // Restore medicine stock
+    visit.items.forEach(item => {
+      if (item.type === 'medicine') {
+        const med = medicines.find(m => m.id === item.itemId);
+        if (med) med.stock += item.qty;
+      }
+    });
+    save();
+    showToast('Bill voided');
+    renderPatientList();
+    if (currentTab === 'reports') renderReport(currentPeriod);
+  }
+}
+
+// ============================================================
+// STOCK
+// ============================================================
+function renderStockList(filter = '') {
+  const grid = document.getElementById('stock-grid');
+  let items = medicines;
+  if (filter) items = items.filter(m =>
+    m.name.toLowerCase().includes(filter.toLowerCase()) ||
+    m.nameTe.includes(filter)
+  );
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="text-muted text-center" style="padding:20px">No medicines</div>';
+    return;
+  }
+  grid.innerHTML = items.map(m => {
+    let badge = '';
+    if (m.stock === 0) badge = '<span class="badge badge-red">Out</span>';
+    else if (m.stock <= 5) badge = '<span class="badge badge-orange">Low</span>';
+    else badge = '<span class="badge badge-green">'+m.stock+'</span>';
+    return `<div class="stock-card">
+      <div class="s-name">${m.name}</div>
+      <div class="s-te">${m.nameTe}</div>
+      <div class="s-meta">
+        <span class="s-stock" style="color:${m.stock === 0 ? 'var(--red)' : m.stock <= 5 ? 'var(--emergency)' : 'var(--green)'}">${m.stock}</span>
+        <span class="s-price">₹${m.price}/${m.unit}</span>
+      </div>
+      <div class="s-actions">
+        <button class="btn btn-accent btn-sm" onclick="addStockItem('${m.id}')">📥 +Stock</button>
+        <button class="btn btn-outline btn-sm" onclick="editPrice('${m.id}')">✏️ Price</button>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('stock-search').focus();
+}
+
+function addStockItem(mid) {
+  const qty = prompt('Enter quantity to add:');
+  if (!qty || isNaN(qty) || parseInt(qty) <= 0) return;
+  const med = medicines.find(m => m.id === mid);
+  if (med) { med.stock += parseInt(qty); save(); renderStockList(document.getElementById('stock-search').value); showToast('Stock updated'); }
+}
+
+function editPrice(mid) {
+  const med = medicines.find(m => m.id === mid);
+  if (!med) return;
+  const price = prompt('New price for ' + med.name + ' (current: ₹' + med.price + '):', med.price);
+  if (!price || isNaN(price) || parseInt(price) <= 0) return;
+  med.price = parseInt(price);
+  save();
+  renderStockList(document.getElementById('stock-search').value);
+  showToast('Price updated');
+}
+
+function addStockModal() {
+  const names = medicines.map(m => m.name + ' (' + m.stock + ' in stock)').join('\n');
+  const input = prompt('Add stock. Format: "MedicineName:qty" or just "qty" for first medicine.\n\nMedicines:\n' + names);
+  if (!input) return;
+  if (input.includes(':')) {
+    const [name, qtyStr] = input.split(':');
+    const med = medicines.find(m => m.name.toLowerCase().includes(name.trim().toLowerCase()));
+    if (!med) { showToast('Medicine not found'); return; }
+    const qty = parseInt(qtyStr);
+    if (isNaN(qty) || qty <= 0) { showToast('Invalid quantity'); return; }
+    med.stock += qty;
+  } else {
+    const qty = parseInt(input);
+    if (isNaN(qty) || qty <= 0) { showToast('Invalid quantity'); return; }
+    // Add to first medicine
+  }
+  save();
+  renderStockList(document.getElementById('stock-search').value);
+  showToast('Stock updated');
+}
+
+// ============================================================
+// MODAL (Medicine/Lab Selector)
+// ============================================================
+function openModal(type) {
+  modalType = type;
+  document.getElementById('modal-overlay').classList.add('show');
+  document.getElementById('modal-title').textContent = type === 'medicine' ? '💊 Select Medicine' : '🔬 Select Lab Test';
+  document.getElementById('modal-search').value = '';
+  renderModalList();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function renderModalList() {
+  const filter = document.getElementById('modal-search').value.toLowerCase();
+  const list = document.getElementById('modal-list');
+  if (modalType === 'medicine') {
+    let items = medicines.filter(m => m.name.toLowerCase().includes(filter) || m.nameTe.includes(filter));
+    if (items.length === 0) { list.innerHTML = '<div class="text-muted text-center" style="padding:20px">No medicines found</div>'; return; }
+    list.innerHTML = items.map(m => `<div class="modal-item" onclick="addMedicineToBill('${m.id}');closeModal();">
+      <div><div class="mi-name">${m.name}</div><div class="mi-price">${m.nameTe} · ${m.stock} in stock</div></div>
+      <div class="mi-price">₹${m.price}/${m.unit}</div>
+    </div>`).join('');
+  } else {
+    let items = LAB_TESTS.filter(l => l.name.toLowerCase().includes(filter) || l.nameTe.includes(filter));
+    if (items.length === 0) { list.innerHTML = '<div class="text-muted text-center" style="padding:20px">No lab tests found</div>'; return; }
+    list.innerHTML = items.map(l => `<div class="modal-item" onclick="addLabToBill('${l.id}');closeModal();">
+      <div><div class="mi-name">${l.name}</div><div class="mi-price">${l.nameTe}</div></div>
+      <div class="mi-price">₹${l.price}</div>
+    </div>`).join('');
+  }
+}
+
+// ============================================================
+// REPORTS
+// ============================================================
+function setPeriod(period) {
+  currentPeriod = period;
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.period-btn').forEach(b => {
+    if (b.textContent.trim().toLowerCase() === period) b.classList.add('active');
+  });
+  renderReport(period);
+}
+
+function getDateRange(period) {
+  const today = new Date();
+  const todayStr = getDateStr();
+  if (period === 'today') return { start: todayStr, end: todayStr };
+  if (period === 'week') {
+    const start = new Date(today);
+    start.setDate(today.getDate() - today.getDay());
+    return { start: formatDate(start), end: todayStr };
+  }
+  if (period === 'month') {
+    const start = new Date(today.getFullYear(), today.getMonth(), 1);
+    return { start: formatDate(start), end: todayStr };
+  }
+  return { start: todayStr, end: todayStr };
+}
+
+function formatDate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  return y + '-' + m + '-' + day;
+}
+
+function getDateStr() {
+  return formatDate(new Date());
+}
+
+function renderReport(period) {
+  const range = getDateRange(period);
+  const periodVisits = visits.filter(v => v.date >= range.start && v.date <= range.end && !v.voided);
+  const patientCount = new Set(periodVisits.map(v => v.patientId)).size;
+  const totalRevenue = periodVisits.reduce((s, v) => s + v.total, 0);
+  const cashTotal = periodVisits.filter(v => v.paymentMode === 'cash').reduce((s, v) => s + v.total, 0);
+  const upiTotal = periodVisits.filter(v => v.paymentMode === 'upi').reduce((s, v) => s + v.total, 0);
+  const avgPerPatient = patientCount > 0 ? Math.round(totalRevenue / patientCount) : 0;
+
+  // Top items
+  const itemMap = {};
+  periodVisits.forEach(v => v.items.forEach(i => {
+    const key = i.name;
+    if (!itemMap[key]) itemMap[key] = { name: i.name, qty: 0, revenue: 0 };
+    itemMap[key].qty += i.qty;
+    itemMap[key].revenue += i.price * i.qty;
+  }));
+  const topItems = Object.values(itemMap).sort((a, b) => b.revenue - a.revenue).slice(0, 8);
+
+  const cashPct = totalRevenue > 0 ? (cashTotal / totalRevenue * 100) : 0;
+
+  const el = document.getElementById('report-content');
+  el.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card"><div class="num">${patientCount}</div><div class="lbl">Patients</div></div>
+      <div class="stat-card"><div class="num">₹${totalRevenue}</div><div class="lbl">Total Revenue</div></div>
+      <div class="stat-card"><div class="num">${periodVisits.length}</div><div class="lbl">Bills</div></div>
+      <div class="stat-card"><div class="num">₹${avgPerPatient}</div><div class="lbl">Avg / Patient</div></div>
+    </div>
+
+    <div style="font-size:13px;font-weight:600;margin-bottom:6px">Payment Split</div>
+    <div class="split-bar-wrap">
+      <div class="split-bar-cash" style="width:${cashPct}%"></div>
+      <div class="split-bar-upi" style="width:${100 - cashPct}%"></div>
+    </div>
+    <div class="flex-between" style="font-size:12px">
+      <span>💵 Cash: <strong>₹${cashTotal}</strong> (${Math.round(cashPct)}%)</span>
+      <span>📱 UPI: <strong>₹${upiTotal}</strong> (${Math.round(100 - cashPct)}%)</span>
+    </div>
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Top Items</div>
+    ${topItems.length === 0 ? '<div class="text-muted">No items billed in this period</div>' :
+      topItems.map(i => `<div class="flex-between" style="font-size:12px;padding:3px 0">
+        <span>${i.name} <span class="text-muted">(${i.qty}×)</span></span>
+        <span>₹${i.revenue}</span>
+      </div>`).join('')}
+
+    <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
+
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Bills (${periodVisits.length})</div>
+    ${periodVisits.length === 0 ? '<div class="text-muted">No bills in this period</div>' :
+      periodVisits.sort((a,b) => b.date.localeCompare(a.date) || b.time.localeCompare(a.time)).slice(0, 30).map(v => {
+        const p = patients.find(pa => pa.id === v.patientId);
+        return `<div class="visit-card">
+          <div class="top">
+            <span class="bill-no">#${v.billNo}</span>
+            <span class="date">${v.date}</span>
+          </div>
+          <div class="items">${p ? p.name : ''} · ${v.items.length} item${v.items.length !== 1 ? 's' : ''} · ${v.paymentMode === 'cash' ? '💵' : '📱'}</div>
+          <div class="total-row"><span></span><span>₹${v.total}</span></div>
+        </div>`;
+      }).join('')}
+
+    <div class="mt-2 flex gap-2 wrap">
+      <button class="btn btn-accent btn-sm" onclick="whatsAppReport('${period}')">📲 WhatsApp Report to Doctor</button>
+      <button class="btn btn-outline btn-sm" onclick="exportData()">📥 Export Data</button>
+      <button class="btn btn-outline btn-sm" onclick="document.getElementById('import-file').click()">📤 Import Data</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+    </div>
+  `;
+}
+
+function whatsAppReport(period) {
+  const range = getDateRange(period);
+  const periodVisits = visits.filter(v => v.date >= range.start && v.date <= range.end && !v.voided);
+  const total = periodVisits.reduce((s, v) => s + v.total, 0);
+  const cash = periodVisits.filter(v => v.paymentMode === 'cash').reduce((s, v) => s + v.total, 0);
+  const upi = periodVisits.filter(v => v.paymentMode === 'upi').reduce((s, v) => s + v.total, 0);
+  const patients = new Set(periodVisits.map(v => v.patientId)).size;
+  const topItems = {};
+  periodVisits.forEach(v => v.items.forEach(i => {
+    const key = i.name;
+    topItems[key] = (topItems[key] || 0) + i.qty;
+  }));
+  const top = Object.entries(topItems).sort((a,b) => b[1] - a[1]).slice(0,5).map(([k,v]) => `${k}: ${v}×`).join('\n');
+
+  const msg = `📊 *${period.charAt(0).toUpperCase() + period.slice(1)} Report*
+🏥 ${SETTINGS.hospital}
+📅 ${range.start} → ${range.end}
+
+👤 Patients: ${patients}
+🧾 Bills: ${periodVisits.length}
+💰 Total: ₹${total}
+💵 Cash: ₹${cash}
+📱 UPI: ₹${upi}
+
+*Top Items:*
+${top || 'N/A'}
+
+_Generated by Sai Kiran Hospital System_`;
+  window.open(`https://wa.me/${SETTINGS.phone.replace(/[^0-9]/g,'')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+// ============================================================
+// DATA EXPORT / IMPORT
+// ============================================================
+function exportData() {
+  const data = { patients, visits, medicines, billCounter, exported: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SaiKiranHospital_Backup_${getDateStr()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Data exported');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.patients) patients = data.patients;
+      if (data.visits) visits = data.visits;
+      if (data.medicines) medicines = data.medicines;
+      if (data.billCounter) billCounter = data.billCounter;
+      save();
+      showToast('Data imported successfully');
+      renderPatientList();
+      renderStockList();
+      if (currentTab === 'reports') renderReport(currentPeriod);
+    } catch(err) {
+      showToast('Invalid file');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ============================================================
+// QUICK STATS
+// ============================================================
+function updateQuickStats() {
+  const today = getDateStr();
+  const todayVisits = visits.filter(v => v.date === today && !v.voided);
+  const count = todayVisits.length;
+  const rev = todayVisits.reduce((s, v) => s + v.total, 0);
+  document.getElementById('today-count').textContent = count;
+  document.getElementById('today-rev').textContent = '₹' + rev;
+}
+
+// ============================================================
+// PRESET GRID RENDER
+// ============================================================
+function renderPresets() {
+  document.getElementById('preset-grid').innerHTML = PRESET_ITEMS.map(p =>
+    `<button class="preset-btn" onclick="addPresetToBill('${p.id}')">
+      <span class="emoji">${p.emoji}</span>
+      <span class="name">${p.name}</span>
+      <span class="price">₹${p.price}</span>
+    </button>`
+  ).join('');
+}
+
+// ============================================================
+// WALK-IN TOGGLE
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInput = document.getElementById('phone-search');
+  searchInput.addEventListener('focus', () => {
+    if (!searchInput.value && !currentPatient) {
+      document.getElementById('walkin-section').style.display = 'block';
+    }
+  });
+  searchInput.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (!currentPatient && !searchInput.value) {
+        document.getElementById('walkin-section').style.display = 'none';
+      }
+    }, 200);
+  });
+});
+
+// ============================================================
+// INIT
+// ============================================================
+load();
+renderPresets();
+renderBill();
+updateQuickStats();
+</script>
+</body>
+</html>
